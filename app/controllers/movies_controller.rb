@@ -19,7 +19,7 @@ class MoviesController < ApplicationController
       unchecked_ratings_to_show = params[:ratings]
         &.select { |k, v| v == "1" }
         &.keys
-      @ratings_to_show = from_home ? unchecked_ratings_to_show || @all_ratings : session[:ratings_to_show] 
+      @ratings_to_show = (from_home ? unchecked_ratings_to_show : session[:ratings_to_show]) || @all_ratings
       
       @movies = Movie.with_ratings(@ratings_to_show)
 
