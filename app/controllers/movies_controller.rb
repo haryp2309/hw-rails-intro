@@ -1,5 +1,11 @@
 class MoviesController < ApplicationController
 
+    def column_header_class(sym)
+      @sort_by == sym ? 'hilite bg-warning' : ''
+    end
+
+    helper_method :column_header_class
+
     def show
       id = params[:id] # retrieve movie ID from URI route
       @movie = Movie.find(id) # look up movie by unique ID
@@ -10,7 +16,18 @@ class MoviesController < ApplicationController
       @ratings_to_show = (params[:ratings] || ActionController::Parameters.new)
         .select { |k, v| v == "1" }
         .keys
+      
       @movies = Movie.with_ratings(@ratings_to_show)
+
+      @sort_by = params[:sort]
+        &.parameterize
+        &.underscore
+        &.to_sym
+
+      if @sort_by then
+        @movies = @movies.order(@sort_by)
+      end
+
       @all_ratings = Movie.all_ratings
     end
   
