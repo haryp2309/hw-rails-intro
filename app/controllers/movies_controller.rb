@@ -13,29 +13,37 @@ class MoviesController < ApplicationController
     end
   
     def index
-      @all_ratings = Movie.all_ratings
 
-      from_home = params[:home] == "1"
-      unchecked_ratings_to_show = params[:ratings]
+      if params[:home] != "1" then
+        new_params = {
+          sort: session[:sort],
+          ratings: session[:ratings],
+          home: 1
+        }
+        redirect_to movies_path(params.merge(new_params))
+      else  
+        @all_ratings = Movie.all_ratings
+        
+        @ratings_to_show = params[:ratings]
         &.select { |k, v| v == "1" }
-        &.keys
-      @ratings_to_show = (from_home ? unchecked_ratings_to_show : session[:ratings_to_show]) || @all_ratings
-      
-      @movies = Movie.with_ratings(@ratings_to_show)
+        &.keys || @all_ratings
+        
+        @movies = Movie.with_ratings(@ratings_to_show)
 
-      @sort_by = unchecked_sort_by = (from_home ? params[:sort] : session[:sort_by])
-        &.parameterize
-        &.underscore
-        &.to_sym
+        @sort_by = unchecked_sort_by = params[:sort]
+          &.parameterize
+          &.underscore
+          &.to_sym
 
 
-      if @sort_by then
-        @movies = @movies.order(@sort_by)
+        if @sort_by then
+          @movies = @movies.order(@sort_by)
+        end
+
+        session.clear
+        session[:sort] = params[:sort]
+        session[:ratings] = params[:ratings]
       end
-
-      session.clear
-      session[:sort_by] = @sort_by
-      session[:ratings_to_show] = @ratings_to_show
     end
   
     def new
