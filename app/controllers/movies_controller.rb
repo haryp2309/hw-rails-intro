@@ -13,22 +13,29 @@ class MoviesController < ApplicationController
     end
   
     def index
-      @ratings_to_show = (params[:ratings] || ActionController::Parameters.new)
-        .select { |k, v| v == "1" }
-        .keys
+      from_home = params[:home] == "1"
+      unchecked_ratings_to_show = params[:ratings]
+        &.select { |k, v| v == "1" }
+        &.keys
+      @ratings_to_show = from_home ? unchecked_ratings_to_show : session[:ratings_to_show] 
       
       @movies = Movie.with_ratings(@ratings_to_show)
 
-      @sort_by = params[:sort]
+      @sort_by = unchecked_sort_by = (from_home ? params[:sort] : session[:sort_by])
         &.parameterize
         &.underscore
         &.to_sym
+
 
       if @sort_by then
         @movies = @movies.order(@sort_by)
       end
 
       @all_ratings = Movie.all_ratings
+
+      session.clear
+      session[:sort_by] = @sort_by
+      session[:ratings_to_show] = @ratings_to_show
     end
   
     def new
