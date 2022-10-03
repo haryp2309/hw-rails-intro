@@ -13,11 +13,13 @@ class MoviesController < ApplicationController
     end
   
     def index
+      @all_ratings = Movie.all_ratings
+
       from_home = params[:home] == "1"
       unchecked_ratings_to_show = params[:ratings]
         &.select { |k, v| v == "1" }
         &.keys
-      @ratings_to_show = from_home ? unchecked_ratings_to_show : session[:ratings_to_show] 
+      @ratings_to_show = from_home ? unchecked_ratings_to_show || @all_ratings : session[:ratings_to_show] 
       
       @movies = Movie.with_ratings(@ratings_to_show)
 
@@ -30,8 +32,6 @@ class MoviesController < ApplicationController
       if @sort_by then
         @movies = @movies.order(@sort_by)
       end
-
-      @all_ratings = Movie.all_ratings
 
       session.clear
       session[:sort_by] = @sort_by
